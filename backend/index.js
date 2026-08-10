@@ -33,7 +33,9 @@ yargs(hideBin(process.argv))
         describe:'revert back to this id',
         type:"string"
     });
-},revertRepo)
+},(argv)=>{
+    revertRepo(argv.commitId);
+})
 .demandCommand(1,"Atleast one command require")
 .help()
 .parse()
