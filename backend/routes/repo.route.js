@@ -7,7 +7,7 @@ repoRouter.get("/repo/all",repoControllers.getAllreposatory);
 repoRouter.post("/repo/create/:id",repoControllers.createReposatory);
 
 repoRouter.get("/repo/name/:name",repoControllers.fetchRepoByName);
-repoRouter.get("/repo/user/:userId",repoControllers.fetchRepoCurrUser);
+repoRouter.get("/repo/user/:id",repoControllers.fetchRepoCurrUser);
 
 repoRouter.get("/repo/:id",repoControllers.fetchRepoById);
 

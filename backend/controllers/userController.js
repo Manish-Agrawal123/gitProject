@@ -4,6 +4,7 @@ dotenv.config();
 const bcrypt = require("bcryptjs");
 const jwt = require('jsonwebtoken');
 const { default: mongoose } = require("mongoose");
+const Repository = require("../models/repoModel.js");
 
 
 const getAlluser = async (req,res)=>{
@@ -53,7 +54,8 @@ const signup = async (req,res)=>{
 
         res.status(200).json({
             message:"user Succesfully created",
-            token
+            token,
+            userId:newUser._id,
         });
 
 
@@ -171,6 +173,42 @@ const updateUserProfile = async (req,res)=>{
     }
 }
 
+const updateStarRepo = async (req, res) => {
+    const repoId = req.params.id;
+    const { userId } = req.body;
+
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        const isStarred = user.starRepo.includes(repoId);
+
+        if (isStarred) {
+            user.starRepo = user.starRepo.filter(
+                id => id.toString() !== repoId
+            );
+        } else {
+            user.starRepo.push(repoId);
+        }
+
+        await user.save();
+
+        res.json(user);
+
+    } catch (err) {
+        console.error("Error updating star repo:", err);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};
+
 module.exports = {
     getAlluser,
     login,
@@ -178,4 +216,5 @@ module.exports = {
     updateUserProfile,
     deleteUserProfile,
     getUserProfile,
+    updateStarRepo,
 }

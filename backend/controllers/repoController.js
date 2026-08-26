@@ -93,7 +93,7 @@ const fetchRepoByName = async (req,res)=>{
 }
 
 const fetchRepoCurrUser = async (req,res)=>{
-    const userId = req.user;
+    const userId = req.params.id;
     try{
         const result = await Reposatory.find({owner:userId});
 
@@ -160,7 +160,7 @@ const toggleReposatory = async (req,res)=>{
     }
 }
 
-const deleteReposatory = (req,res)=>{
+const deleteReposatory = async (req,res)=>{
     const {id} = req.params;
     try{
         const result = await Reposatory.findByIdAndDelete(id);

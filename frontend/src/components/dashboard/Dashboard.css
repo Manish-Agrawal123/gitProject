@@ -1,0 +1,10 @@
+body{
+    color:white;
+    background-color: black;
+}
+
+#Dashboard{
+    display: flex;
+    width: auto;
+    justify-content: space-evenly;
+}
