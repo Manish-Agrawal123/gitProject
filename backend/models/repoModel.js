@@ -11,11 +11,8 @@ const RepositorySchema = new Schema({
 
     description: {
         type: String,
+        required:true,
     },
-
-    content: [{
-        type: String,
-    }],
 
     visibility: {
         type: Boolean,
@@ -30,7 +27,17 @@ const RepositorySchema = new Schema({
     issue: [{
         type: Schema.Types.ObjectId,
         ref: "Issue",
-    }]
+    }],
+
+    stars:{
+        type:Number,
+        default:0,
+    },
+
+    currCommitId:{
+        type:String,
+        default:"",
+    }
 });
 
 const Repository = mongoose.model("Repository", RepositorySchema);

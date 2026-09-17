@@ -1,17 +1,27 @@
 import "./Dashboard.css";
 import { useState,useEffect } from "react";
 import axios from "axios";
-import StarIcon from "@mui/icons-material/Star";
-import IconButton from "@mui/material/IconButton";
+import SuggestedRepoCard from "./SuggestedRepoCard";
+import RepoSidebar from "./RepoSidebar";
+import Changelog from "./Changelog";
+import Grid from "@mui/material/Grid";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import Navbar from "./Navbar";
 
 const Dashboard = () =>{
+
     let [userRepos,setUserRepos] = useState([]);
     let [suggRepos,setSuggRepo] = useState([]);
     let [search,setSearch] = useState("");
-    let [searchResult,setSearchResult] = useState([]);
-    const [starredRepos, setStarredRepos] = useState([]);
+    let [starredRepos,setStarredRepos] = useState([]);
+
+    const isMobile = useMediaQuery("(max-width:599px)");
 
     const userId = localStorage.getItem("userId");
+
+    const searchResult = userRepos.filter((repo) =>
+        repo.name?.toLowerCase().includes(search.toLowerCase())
+    );
 
 
     const handleStar = async (repoId) => {
@@ -21,7 +31,7 @@ const Dashboard = () =>{
                 userId
             });
 
-            setStarredRepos(res.data.starRepo);
+            setStarredRepos(res.data.starRepo || []);
         } catch (err) {
             console.error("Error updating star:", err);
         }
@@ -44,14 +54,14 @@ const Dashboard = () =>{
         const fetchStarRepos = async () =>{
             try{
                 const response = await axios.get(`http://localhost:3000/userProfile/${userId}`);
-                setStarredRepos(response.data.starRepo);
+                setStarredRepos(response.data.starRepo || []);
             }
             catch(err){
                 console.error("Error in fetching star reposatories",err);
             }
         }
         fetchStarRepos();
-    },[]);
+    },[userId]);
 
     useEffect(()=>{
         const fetchSuggRepos = async () =>{
@@ -64,62 +74,80 @@ const Dashboard = () =>{
             }
         }
         fetchSuggRepos();
-    },[])
-
-    useEffect(()=>{
-        if(search == ""){
-            setSearchResult(userRepos);
-        }else{
-            const filteredRepo = userRepos.filter((repo)=>{
-                return repo.name.toLowerCase().includes(search.toLowerCase());
-            })
-            setSearchResult(filteredRepo);
-        }
-    },[search,userRepos])
+    },[starredRepos])
 
     return(<>
-        <section id ="Dashboard">
-            <aside>
-                <h2>Suggest Reposatories </h2>
-                {suggRepos.map((repo)=>{
-                    return <div key = {repo._id}>
-                        <h4 style={{ display: "inline" }}>{repo.name}</h4>
-                        <IconButton onClick={() => handleStar(repo._id)}>
-                            <StarIcon
-                                sx={{
-                                    color: starredRepos.includes(repo._id)
-                                        ? "gold"
-                                        : "gray"
-                                }}
-                            />
-                        </IconButton>
-                        <h5>{repo.description}</h5>
-                    </div>
-                })}
-            </aside>
-            <main>
-                <h2>Your Repos</h2>
-                <input placeholder="Search..." type="text" value={search} onChange={(e) => setSearch(e.target.value)}/>
-                {searchResult.map((repo)=>{
-                    return <div key = {repo._id}>
-                        <h4>{repo.name}</h4>
-                        <h5>{repo.description}</h5>
-                    </div>
-                })}
-            </main>
-            <aside>
-                <h2>Trending</h2>
-                <div>
-                    <h4>Airtificial Intelligence</h4>
-                </div>
-                <div>
-                    <h4>Airtificial Intelligence</h4>
-                </div>
-                <div>
-                    <h4>Airtificial Intelligence</h4>
-                </div>
-            </aside>
-        </section>
+        <Navbar/>
+        <Grid container spacing={5} sx={{ paddingTop: 3 }}>
+
+            {/* First Aside - visible from 600px and above */}
+            {!isMobile && (
+                <Grid
+                    size={{ xs: 3, md: 3 }}
+                    sx={{
+                        borderRight: {
+                            xs: "none",
+                            md: "1px solid #30363d",
+                        },
+                        minHeight: "100vh",
+                        pr: 2,
+                        boxSizing: "border-box",
+                    }}
+                >
+                    <RepoSidebar
+                        search={search}
+                        setSearch={setSearch}
+                        searchResult={searchResult}
+                    />
+                </Grid>
+            )}
+
+            {/* Main */}
+            <Grid
+                size={{
+                    xs: isMobile ? 12 : 9,
+                    md: 6,
+                }}
+            >
+
+                {/* RepoSidebar inside Main on mobile */}
+                {isMobile && (
+                    <RepoSidebar
+                        search={search}
+                        setSearch={setSearch}
+                        searchResult={searchResult}
+                    />
+                )}
+
+                <h2>Suggest Repositories</h2>
+
+                {suggRepos.map((repo) => (
+                    <SuggestedRepoCard
+                        key={repo._id}
+                        repo={repo}
+                        handleStar={handleStar}
+                        starredRepos={starredRepos}
+                    />
+                ))}
+
+            </Grid>
+
+            {/* Second Aside - visible from 600px and above? */}
+            {!isMobile && (
+                <Grid
+                    size={{ xs: 0, md: 3 }}
+                    sx={{
+                        display: {
+                            xs: "none",
+                            md: "block",
+                        },
+                    }}
+                >
+                    <Changelog />
+                </Grid>
+            )}
+
+        </Grid>
     </>);
 }
 

@@ -6,7 +6,15 @@ const {s3,S3_BUCKET} = require('../config/aws-cnfig');
 
 async function pushRepo() {
     const repoPath = path.resolve(process.cwd(),".apnaGit");
-    const commitsPath = path.join(repoPath,"commits");
+    
+
+    const data = await fs.readFile(`${repoPath}/config.json`);
+    
+    const repoId = JSON.parse(data).repoId;
+    
+    const repoIdPath = path.join(repoPath,`${repoId}`);
+    const commitsPath = path.join(repoIdPath,"commits");
+
     try{
         const commitDirs = await fs.readdir(commitsPath);
         for(let commitDir of commitDirs){
@@ -17,7 +25,7 @@ async function pushRepo() {
                 const fileContent = await fs.readFile(filePath);
                 const param = {
                     Bucket:S3_BUCKET,
-                    Key:`/commits/${commitDir}/${file}`,
+                    Key:`${repoId}/commits/${commitDir}/${file}`,
                     Body:fileContent,
                 }
                 await s3.upload(param).promise();

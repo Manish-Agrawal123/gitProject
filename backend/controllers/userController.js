@@ -106,7 +106,7 @@ const getUserProfile = async (req,res)=>{
     try{
         const id = req.params.id;
 
-        let user = await User.findById(id);
+        let user = await User.findById(id).populate("reposatory");
 
         if(!user){
             return res.status(404).json({message:"user not found"});
@@ -186,17 +186,28 @@ const updateStarRepo = async (req, res) => {
             });
         }
 
+        const repo = await Repository.findById(repoId);
+
+        if (!repo) {
+            return res.status(400).json({
+                message: "Reposatory not found"
+            });
+        }
+
         const isStarred = user.starRepo.includes(repoId);
 
         if (isStarred) {
             user.starRepo = user.starRepo.filter(
                 id => id.toString() !== repoId
             );
+            repo.stars = repo.stars - 1;
         } else {
             user.starRepo.push(repoId);
+            repo.stars = repo.stars + 1;
         }
 
         await user.save();
+        await repo.save();
 
         res.json(user);
 

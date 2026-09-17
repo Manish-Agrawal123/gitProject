@@ -15,5 +15,7 @@ repoRouter.put("/repo/update/:id",repoControllers.updateReposatory);
 repoRouter.patch("/repo/toggle/:id",repoControllers.toggleReposatory);
 repoRouter.delete("/repo/delete/:id",repoControllers.deleteReposatory);
 
+repoRouter.get("/repo/files/:id",repoControllers.repoFiles);
+
 module.exports = repoRouter;
 

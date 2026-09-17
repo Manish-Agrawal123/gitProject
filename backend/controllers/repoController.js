@@ -2,46 +2,63 @@ const mongoose = require("mongoose");
 const User = require("../models/userModel");
 const Reposatory = require("../models/repoModel");
 const Issue = require("../models/issueModel");
+const path = require("path");
 
-const createReposatory = async (req,res)=>{
-    const {id} = req.params;
-    const { name,description,content,visibility} = req.body;
-    try{
-
-        if(!name){
-            return res.status(400).json({message:"Name does not exist"});
+const createReposatory = async (req, res) => {
+    const { id } = req.params;
+    const { name, description, content, visibility } = req.body;
+    try {
+        if (!name) {
+            return res.status(400).json({
+                message: "Name does not exist"
+            });
         }
-
-        if(!mongoose.Types.ObjectId.isValid(id)){
-            return res.status(400).json({message:"Invalid user id"});
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                message: "Invalid user id"
+            });
         }
-
         const newReposatory = new Reposatory({
             name,
-            owner:id,
+            owner: id,
             description,
             content,
             visibility,
         });
-
         const result = await newReposatory.save();
 
-        res.status(201).json({
-            message:"new reposatory created",
-            userId:result._id,
-        })
+        // Find the user
+        const user = await User.findById(id);
 
-    }catch(err){
-        console.error("error in create Reposatory",err);
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+        // Add repository id to user's repositories
+        user.reposatory.push(result._id);
+
+        // Save updated user
+        await user.save();
+
+        res.status(201).json({
+            message: "new reposatory created",
+            userId: result._id,
+        });
+
+    } catch (err) {
+
+        console.error("error in create Reposatory", err);
+
         res.status(500).json({
-            message:"erron in creating the repo"
+            message: "error in creating the repo"
         });
     }
-}
+};
 
 const getAllreposatory = async (req,res)=>{
     try{
-        const result = await Reposatory.find({});
+        const result = await Reposatory.find({}).populate("owner", "username avatar");
         res.json(result);
 
     }catch(err){
@@ -178,6 +195,50 @@ const deleteReposatory = async (req,res)=>{
     }
 }
 
+const repoFiles = async (req,res) =>{
+    const repoId = req.params.id;
+    try{
+
+        const fetchrepo = await Reposatory.findById(repoId);
+        if(!fetchrepo){
+            res.status(400).json("Reposatory not found");
+            return;
+        }
+        const params = {
+            Bucket: S3_BUCKET,
+            Prefix: `${repoId}/commits/${fetchrepo.currCommitId}/`,
+        };
+
+        const data = await s3.listObjectsV2(params).promise();
+
+        const objects = data.Contents;
+
+        const repo = [];
+
+        for(let object of objects){
+
+            const key = object.Key;
+
+            const params = {
+                Bucket: S3_BUCKET,
+                Key: key
+            };
+
+            const fileCont = await s3.getObject(params).promise();
+
+            repo.push({
+                fileName:path.basename(key),
+                key:key,
+                content:fileCont.Body.toString()
+            });   
+            
+        }
+        res.json(repo);
+    }catch(err){
+        console.error("problem in s3 bucket");
+    }
+}
+
 module.exports = {
     createReposatory,
     fetchRepoById,
@@ -187,4 +248,5 @@ module.exports = {
     toggleReposatory,
     deleteReposatory,
     getAllreposatory,
+    repoFiles,
 }

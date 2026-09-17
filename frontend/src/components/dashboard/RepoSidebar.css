@@ -1,0 +1,129 @@
+.repo-sidebar {
+    width: 100%;
+    color: #f0f6fc;
+}
+
+/* Header */
+
+.repo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.repo-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* New button */
+
+.new-repo-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    background-color: #238636;
+    color: white;
+
+    border: 1px solid #2ea043;
+    border-radius: 6px;
+
+    padding: 6px 12px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.new-repo-btn:hover {
+    background-color: #2ea043;
+}
+
+/* Search */
+
+.repo-search {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 8px 12px;
+
+    background-color: #0d1117;
+    color: #f0f6fc;
+
+    border: 1px solid #30363d;
+    border-radius: 6px;
+
+    outline: none;
+
+    font-size: 14px;
+
+    margin-bottom: 15px;
+}
+
+.repo-search::placeholder {
+    color: #8b949e;
+}
+
+.repo-search:focus {
+    border-color: #58a6ff;
+}
+
+/* Repository list */
+
+.repo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Individual repository */
+
+.repo-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    cursor: pointer;
+
+    padding: 2px 0;
+}
+
+.repo-item:hover .repo-name {
+    text-decoration: underline;
+}
+
+/* Repository icon */
+
+.repo-icon {
+    width: 20px;
+    height: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: #e7b6e8;
+    color: white;
+
+    border-radius: 50%;
+
+    font-size: 12px;
+    font-weight: bold;
+
+    flex-shrink: 0;
+}
+
+/* Repository name */
+
+.repo-name {
+    font-size: 14px;
+    color: #f0f6fc;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

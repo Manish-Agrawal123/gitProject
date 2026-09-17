@@ -59,7 +59,11 @@ const ProjectRoutes = () =>{
         {
             path:"/profile",
             element:<Profile/>
-        }
+        },
+        {
+            path:"/files/:repoId",
+            element:<Files/> 
+        },
     ])
     return elements;
 }

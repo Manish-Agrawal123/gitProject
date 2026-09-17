@@ -19,13 +19,13 @@ const UserSchema = new Schema({
     reposatory:[{
         default:[],
         type:Schema.Types.ObjectId,
-        ref:"Reposatory",
+        ref: "Repository",
     }],
 
     starRepo:[{
         default:[],
         type:Schema.Types.ObjectId,
-        ref:"Reposatory",
+        ref: "Repository",
     }],
 
     followedUser:[{

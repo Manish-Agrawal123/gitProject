@@ -1,0 +1,64 @@
+.changelog {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 20px 20px 18px;
+    color: #f0f6fc;
+    max-width: 280px;
+}
+
+.changelog h3 {
+    margin: 0 0 20px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.timeline {
+    border-left: 1px solid #30363d;
+    margin-left: 5px;
+}
+
+.timeline-item {
+    position: relative;
+    display: flex;
+    margin-bottom: 20px;
+    padding-left: 29px;
+}
+
+.dot {
+    position: absolute;
+    left: -6px;
+    top: 5px;
+
+    width: 10px;
+    height: 10px;
+
+    background: #484f58;
+    border-radius: 50%;
+}
+
+.date {
+    margin: 0 0 5px;
+    color: #8b949e;
+    font-size: 13px;
+}
+
+.title {
+    margin: 0;
+    color: #f0f6fc;
+    font-size: 16px;
+    line-height: 1.45;
+}
+
+.changelog-link {
+    display: inline-block;
+    margin-left: 35px;
+    color: #8b949e;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.changelog-link:hover {
+    color: #58a6ff;
+    text-decoration: underline;
+}
