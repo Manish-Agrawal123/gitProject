@@ -18,7 +18,7 @@ const IssueSchema = new Schema({
     },
     reposatory:{
         type:Schema.Types.ObjectId,
-        ref:"Reposatory",
+        ref:"Repository",
         required:true,
     }
 })

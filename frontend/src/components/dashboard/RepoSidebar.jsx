@@ -1,13 +1,16 @@
 import "./RepoSidebar.css";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const RepoSidebar = ({ search, setSearch, searchResult }) => {
+    const navigate = useNavigate();
     return (
         <aside className="repo-sidebar">
 
             <div className="repo-header">
                 <h2>Your Repos</h2>
 
-                <button className="new-repo-btn">
+                <button className="new-repo-btn" onClick={() => navigate("/repo/create")}>
                     <span>▣</span> New
                 </button>
             </div>
@@ -30,9 +33,12 @@ const RepoSidebar = ({ search, setSearch, searchResult }) => {
                             ✚
                         </div>
 
-                        <span className="repo-name">
+                        <Link
+                            to={`/files/${repo._id}`}
+                            className="repo-name"
+                        >
                             {repo.owner?.username}/{repo.name}
-                        </span>
+                        </Link>
                     </div>
                 ))}
             </div>

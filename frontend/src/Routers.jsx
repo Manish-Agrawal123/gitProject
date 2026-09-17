@@ -6,8 +6,11 @@ import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
 import Dashboard from "./components/dashboard/Dashboard";
 import Profile from "./components/user/Profile";
+import Files from "./components/dashboard/Files/Files";
+import Repositories from "./components/dashboard/Repositories";
 
 import { useAuth } from "./AuthContext";
+import CreateRepository from "./components/dashboard/CreateRepository";
 
 
 const ProjectRoutes = () =>{
@@ -21,7 +24,7 @@ const ProjectRoutes = () =>{
         const userIdfromLocal = localStorage.getItem("userId");
 
         // Load user from localStorage into Context
-        if (userIdfromLocal && User) {
+        if (userIdfromLocal && !User) {
             setUser(userIdfromLocal);
         }
 
@@ -63,6 +66,14 @@ const ProjectRoutes = () =>{
         {
             path:"/files/:repoId",
             element:<Files/> 
+        },
+        {
+            path:"/repo/create",
+            element:<CreateRepository/>
+        },
+        {
+            path: "/repositories",
+            element: <Repositories />
         },
     ])
     return elements;

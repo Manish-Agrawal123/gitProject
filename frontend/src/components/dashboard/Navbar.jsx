@@ -89,7 +89,7 @@ const Navbar = () => {
                     <Tooltip title="Create Repository">
                         <IconButton
                             component={Link}
-                            to="/new-repository"
+                            to="/repo/create"
                             sx={{
                                 color: "#f0f6fc",
                                 border: "1px solid #30363d",

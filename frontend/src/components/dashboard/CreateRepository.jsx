@@ -1,49 +1,71 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 import {
     Box,
+    Typography,
+    TextField,
+    Radio,
     Button,
     FormControl,
-    FormControlLabel,
     FormLabel,
-    Radio,
-    RadioGroup,
-    Stack,
-    TextField,
-    Typography,
+    FormControlLabel,
+    Divider,
 } from "@mui/material";
 
 const CreateRepository = () => {
+    const navigate = useNavigate();
+
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [visibility, setVisibility] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const userId = localStorage.getItem("userId");
 
-    const handleSubmit = async (e) => {
+    const handleCreateRepository = async (e) => {
         e.preventDefault();
 
-        if (!name.trim() || !description.trim()) {
+        if (!name.trim()) {
+            setError("Repository name is required");
+            return;
+        }
+
+        if (!description.trim()) {
+            setError("Description is required");
+            return;
+        }
+
+        if (!userId) {
+            setError("User is not logged in");
             return;
         }
 
         try {
             setLoading(true);
+            setError("");
 
-            const { data } = await axios.post(`http://localhost:3000/repo/create/${userId}`, {
-                name: name.trim(),
-                description: description.trim(),
-                visibility,
-            });
+            const response = await axios.post(
+                `http://localhost:3000/repo/create/${userId}`,
+                {
+                    name: name.trim(),
+                    description: description.trim(),
+                    visibility: visibility,
+                }
+            );
 
-            console.log("Repository created:", data);
+            console.log("Repository created:", response.data);
 
-        } catch (error) {
-            console.error(
-                "Error creating repository:",
-                error.response?.data || error.message
+            // Go back to dashboard after successful creation
+            navigate("/");
+        } catch (err) {
+            console.error("Repository creation failed:", err);
+
+            setError(
+                err.response?.data?.message ||
+                "Failed to create repository"
             );
         } finally {
             setLoading(false);
@@ -53,19 +75,27 @@ const CreateRepository = () => {
     return (
         <Box
             sx={{
-                maxWidth: 768,
-                mx: "auto",
-                px: 3,
-                py: 5,
+                minHeight: "100vh",
+                backgroundColor: "#0d1117",
+                color: "#f0f6fc",
+                px: { xs: 2, sm: 4 },
+                py: 4,
             }}
         >
-            {/* Header */}
-            <Box sx={{ mb: 4 }}>
+            <Box
+                component="form"
+                onSubmit={handleCreateRepository}
+                sx={{
+                    maxWidth: 900,
+                    mx: "auto",
+                }}
+            >
+                {/* Header */}
                 <Typography
                     sx={{
-                        fontSize: 26,
+                        fontSize: { xs: 24, sm: 28 },
                         fontWeight: 600,
-                        color: "#1f2328",
+                        color: "#f0f6fc",
                         mb: 1,
                     }}
                 >
@@ -74,259 +104,336 @@ const CreateRepository = () => {
 
                 <Typography
                     sx={{
-                        fontSize: 14,
-                        color: "#656d76",
+                        fontSize: 15,
+                        color: "#8b949e",
+                        mb: 4,
                     }}
                 >
                     A repository contains all project files and the revision
                     history.
                 </Typography>
-            </Box>
 
-            {/* Form */}
-            <Box component="form" onSubmit={handleSubmit}>
-                <Stack spacing={3}>
-
-                    {/* Repository name */}
-                    <Box>
-                        <FormLabel
-                            sx={{
-                                display: "block",
-                                fontSize: 14,
-                                fontWeight: 600,
-                                color: "#1f2328",
-                                mb: 1,
-                            }}
-                        >
-                            Repository name
-                            <Box
-                                component="span"
-                                sx={{
-                                    color: "#cf222e",
-                                    ml: 0.5,
-                                }}
-                            >
-                                *
-                            </Box>
-                        </FormLabel>
-
-                        <TextField
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="my-project"
-                            required
-                            size="small"
-                            fullWidth
-                            sx={{
-                                maxWidth: 500,
-                                "& .MuiOutlinedInput-root": {
-                                    borderRadius: 1,
-                                },
-                            }}
-                        />
-
-                        <Typography
-                            sx={{
-                                fontSize: 12,
-                                color: "#656d76",
-                                mt: 1,
-                            }}
-                        >
-                            A short and memorable name for your repository.
-                        </Typography>
-                    </Box>
-
-                    {/* Description */}
-                    <Box>
-                        <FormLabel
-                            sx={{
-                                display: "block",
-                                fontSize: 14,
-                                fontWeight: 600,
-                                color: "#1f2328",
-                                mb: 1,
-                            }}
-                        >
-                            Description
-                            <Box
-                                component="span"
-                                sx={{
-                                    color: "#cf222e",
-                                    ml: 0.5,
-                                }}
-                            >
-                                *
-                            </Box>
-                        </FormLabel>
-
-                        <TextField
-                            value={description}
-                            onChange={(e) =>
-                                setDescription(e.target.value)
-                            }
-                            placeholder="A short description of your project"
-                            required
-                            fullWidth
-                            multiline
-                            rows={3}
-                            size="small"
-                            sx={{
-                                "& .MuiOutlinedInput-root": {
-                                    borderRadius: 1,
-                                },
-                            }}
-                        />
-                    </Box>
-
-                    {/* Visibility */}
-                    <Box>
-                        <FormControl fullWidth>
-                            <FormLabel
-                                sx={{
-                                    fontSize: 14,
-                                    fontWeight: 600,
-                                    color: "#1f2328",
-                                    mb: 1,
-                                }}
-                            >
-                                Visibility
-                            </FormLabel>
-
-                            <RadioGroup
-                                value={
-                                    visibility
-                                        ? "public"
-                                        : "private"
-                                }
-                                onChange={(e) =>
-                                    setVisibility(
-                                        e.target.value === "public"
-                                    )
-                                }
-                            >
-                                {/* Public */}
-                                <Box
-                                    sx={{
-                                        border: "1px solid #d0d7de",
-                                        borderRadius: 1,
-                                        p: 1.5,
-                                        mb: 1.5,
-                                    }}
-                                >
-                                    <FormControlLabel
-                                        value="public"
-                                        control={<Radio size="small" />}
-                                        sx={{
-                                            m: 0,
-                                            width: "100%",
-                                            alignItems: "flex-start",
-                                        }}
-                                        label={
-                                            <Box sx={{ pt: 0.3 }}>
-                                                <Typography
-                                                    sx={{
-                                                        fontSize: 14,
-                                                        fontWeight: 600,
-                                                        color: "#1f2328",
-                                                    }}
-                                                >
-                                                    Public
-                                                </Typography>
-
-                                                <Typography
-                                                    sx={{
-                                                        fontSize: 13,
-                                                        color: "#656d76",
-                                                        mt: 0.3,
-                                                    }}
-                                                >
-                                                    Anyone can see this
-                                                    repository.
-                                                </Typography>
-                                            </Box>
-                                        }
-                                    />
-                                </Box>
-
-                                {/* Private */}
-                                <Box
-                                    sx={{
-                                        border: "1px solid #d0d7de",
-                                        borderRadius: 1,
-                                        p: 1.5,
-                                    }}
-                                >
-                                    <FormControlLabel
-                                        value="private"
-                                        control={<Radio size="small" />}
-                                        sx={{
-                                            m: 0,
-                                            width: "100%",
-                                            alignItems: "flex-start",
-                                        }}
-                                        label={
-                                            <Box sx={{ pt: 0.3 }}>
-                                                <Typography
-                                                    sx={{
-                                                        fontSize: 14,
-                                                        fontWeight: 600,
-                                                        color: "#1f2328",
-                                                    }}
-                                                >
-                                                    Private
-                                                </Typography>
-
-                                                <Typography
-                                                    sx={{
-                                                        fontSize: 13,
-                                                        color: "#656d76",
-                                                        mt: 0.3,
-                                                    }}
-                                                >
-                                                    Only you can see this
-                                                    repository.
-                                                </Typography>
-                                            </Box>
-                                        }
-                                    />
-                                </Box>
-                            </RadioGroup>
-                        </FormControl>
-                    </Box>
-
-                    {/* Create button */}
-                    <Box
+                {/* Repository name */}
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                    <FormLabel
                         sx={{
-                            pt: 2,
-                            borderTop: "1px solid #d8dee4",
+                            color: "#f0f6fc",
+                            fontSize: 14,
+                            fontWeight: 600,
+                            mb: 1,
                         }}
                     >
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            disabled={
-                                loading ||
-                                !name.trim() ||
-                                !description.trim()
+                        Repository name
+                        <Box
+                            component="span"
+                            sx={{ color: "#f85149", ml: 0.5 }}
+                        >
+                            *
+                        </Box>
+                    </FormLabel>
+
+                    <TextField
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="my-project"
+                        size="small"
+                        fullWidth
+                        autoComplete="off"
+                        sx={{
+                            maxWidth: 560,
+
+                            "& .MuiOutlinedInput-root": {
+                                color: "#f0f6fc",
+                                backgroundColor: "#0d1117",
+
+                                "& fieldset": {
+                                    borderColor: "#30363d",
+                                },
+
+                                "&:hover fieldset": {
+                                    borderColor: "#8b949e",
+                                },
+
+                                "&.Mui-focused fieldset": {
+                                    borderColor: "#58a6ff",
+                                    borderWidth: 1,
+                                },
+                            },
+
+                            "& .MuiInputBase-input::placeholder": {
+                                color: "#6e7681",
+                                opacity: 1,
+                            },
+                        }}
+                    />
+
+                    <Typography
+                        sx={{
+                            fontSize: 13,
+                            color: "#8b949e",
+                            mt: 1,
+                        }}
+                    >
+                        A short and memorable name for your repository.
+                    </Typography>
+                </FormControl>
+
+                {/* Description */}
+                <FormControl fullWidth sx={{ mb: 4 }}>
+                    <FormLabel
+                        sx={{
+                            color: "#f0f6fc",
+                            fontSize: 14,
+                            fontWeight: 600,
+                            mb: 1,
+                        }}
+                    >
+                        Description
+                        <Box
+                            component="span"
+                            sx={{ color: "#f85149", ml: 0.5 }}
+                        >
+                            *
+                        </Box>
+                    </FormLabel>
+
+                    <TextField
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="A short description of your project"
+                        multiline
+                        rows={4}
+                        fullWidth
+                        sx={{
+                            "& .MuiOutlinedInput-root": {
+                                color: "#f0f6fc",
+                                backgroundColor: "#0d1117",
+
+                                "& fieldset": {
+                                    borderColor: "#30363d",
+                                },
+
+                                "&:hover fieldset": {
+                                    borderColor: "#8b949e",
+                                },
+
+                                "&.Mui-focused fieldset": {
+                                    borderColor: "#58a6ff",
+                                    borderWidth: 1,
+                                },
+                            },
+
+                            "& .MuiInputBase-input::placeholder": {
+                                color: "#6e7681",
+                                opacity: 1,
+                            },
+                        }}
+                    />
+                </FormControl>
+
+                {/* Visibility */}
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                    <FormLabel
+                        sx={{
+                            color: "#f0f6fc",
+                            fontSize: 14,
+                            fontWeight: 600,
+                            mb: 1.5,
+                        }}
+                    >
+                        Visibility
+                    </FormLabel>
+
+                    {/* Public */}
+                    <Box
+                        onClick={() => setVisibility(true)}
+                        sx={{
+                            border: "1px solid #30363d",
+                            borderRadius: "6px",
+                            p: 2,
+                            mb: 1.5,
+                            cursor: "pointer",
+
+                            "&:hover": {
+                                backgroundColor: "#161b22",
+                                borderColor: "#8b949e",
+                            },
+                        }}
+                    >
+                        <FormControlLabel
+                            value="public"
+                            control={
+                                <Radio
+                                    checked={visibility === true}
+                                    onChange={() => setVisibility(true)}
+                                    sx={{
+                                        color: "#6e7681",
+                                        "&.Mui-checked": {
+                                            color: "#58a6ff",
+                                        },
+                                    }}
+                                />
+                            }
+                            label={
+                                <Box>
+                                    <Typography
+                                        sx={{
+                                            fontSize: 14,
+                                            fontWeight: 600,
+                                            color: "#f0f6fc",
+                                        }}
+                                    >
+                                        Public
+                                    </Typography>
+
+                                    <Typography
+                                        sx={{
+                                            fontSize: 13,
+                                            color: "#8b949e",
+                                            mt: 0.3,
+                                        }}
+                                    >
+                                        Anyone can see this repository.
+                                    </Typography>
+                                </Box>
                             }
                             sx={{
-                                backgroundColor: "#1f883d",
-                                textTransform: "none",
-                                fontWeight: 600,
-                                fontSize: 14,
-                                borderRadius: 1,
-                                px: 2,
-                                "&:hover": {
-                                    backgroundColor: "#1a7f37",
-                                },
+                                m: 0,
+                                width: "100%",
                             }}
-                        >
-                            {loading
-                                ? "Creating..."
-                                : "Create repository"}
-                        </Button>
+                        />
                     </Box>
-                </Stack>
+
+                    {/* Private */}
+                    <Box
+                        onClick={() => setVisibility(false)}
+                        sx={{
+                            border: "1px solid #30363d",
+                            borderRadius: "6px",
+                            p: 2,
+                            cursor: "pointer",
+
+                            "&:hover": {
+                                backgroundColor: "#161b22",
+                                borderColor: "#8b949e",
+                            },
+                        }}
+                    >
+                        <FormControlLabel
+                            value="private"
+                            control={
+                                <Radio
+                                    checked={visibility === false}
+                                    onChange={() => setVisibility(false)}
+                                    sx={{
+                                        color: "#6e7681",
+                                        "&.Mui-checked": {
+                                            color: "#58a6ff",
+                                        },
+                                    }}
+                                />
+                            }
+                            label={
+                                <Box>
+                                    <Typography
+                                        sx={{
+                                            fontSize: 14,
+                                            fontWeight: 600,
+                                            color: "#f0f6fc",
+                                        }}
+                                    >
+                                        Private
+                                    </Typography>
+
+                                    <Typography
+                                        sx={{
+                                            fontSize: 13,
+                                            color: "#8b949e",
+                                            mt: 0.3,
+                                        }}
+                                    >
+                                        Only you can see this repository.
+                                    </Typography>
+                                </Box>
+                            }
+                            sx={{
+                                m: 0,
+                                width: "100%",
+                            }}
+                        />
+                    </Box>
+                </FormControl>
+
+                {/* Error */}
+                {error && (
+                    <Typography
+                        sx={{
+                            color: "#f85149",
+                            fontSize: 14,
+                            mb: 2,
+                        }}
+                    >
+                        {error}
+                    </Typography>
+                )}
+
+                <Divider
+                    sx={{
+                        borderColor: "#30363d",
+                        mb: 2,
+                    }}
+                />
+
+                {/* Buttons */}
+                <Box
+                    sx={{
+                        display: "flex",
+                        gap: 1.5,
+                    }}
+                >
+                    <Button
+                        type="submit"
+                        disabled={loading}
+                        variant="contained"
+                        sx={{
+                            textTransform: "none",
+                            fontWeight: 600,
+                            backgroundColor: "#238636",
+                            color: "#ffffff",
+                            px: 2,
+
+                            "&:hover": {
+                                backgroundColor: "#2ea043",
+                            },
+
+                            "&:disabled": {
+                                backgroundColor: "#21262d",
+                                color: "#6e7681",
+                            },
+                        }}
+                    >
+                        {loading ? "Creating..." : "Create repository"}
+                    </Button>
+
+                    <Button
+                        type="button"
+                        onClick={() => navigate("/")}
+                        sx={{
+                            textTransform: "none",
+                            fontWeight: 600,
+                            color: "#f0f6fc",
+                            border: "1px solid #30363d",
+                            px: 2,
+
+                            "&:hover": {
+                                backgroundColor: "#161b22",
+                                borderColor: "#8b949e",
+                            },
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                </Box>
             </Box>
         </Box>
     );

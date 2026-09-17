@@ -3,6 +3,7 @@ const User = require("../models/userModel");
 const Reposatory = require("../models/repoModel");
 const Issue = require("../models/issueModel");
 const path = require("path");
+const { s3, S3_BUCKET } = require("../config/aws-cnfig");
 
 const createReposatory = async (req, res) => {
     const { id } = req.params;

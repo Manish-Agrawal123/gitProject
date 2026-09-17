@@ -36,18 +36,19 @@ function SuggestedRepoCard({
                 </Avatar>
 
                 <Link
-                    to={`/profile/${repo.owner?._id}`}
+                    to={`/files/${repo._id}`}
                     style={{
                         textDecoration: "none",
                         color: "white",
-                        
                     }}
                 >
-                    <p style={{ 
-                        fontWeight: 800,
-                        fontSize: "20px",
-                        margin: 0,
-                     }}>
+                    <p
+                        style={{
+                            fontWeight: 800,
+                            fontSize: "20px",
+                            margin: 0,
+                        }}
+                    >
                         {repo.name}
                     </p>
                 </Link>
