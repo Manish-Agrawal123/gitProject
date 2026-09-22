@@ -71,7 +71,7 @@ const login = async (req,res)=>{
     try{
         const {email,password} = req.body;
         const user = await User.findOne({email});
-        if (!user) {
+        if(!user || !user.password) {
             return res.status(401).json({
                 message: "Invalid credential"
             });
@@ -104,7 +104,7 @@ const login = async (req,res)=>{
 
 const getUserProfile = async (req,res)=>{
     try{
-        const id = req.params.id;
+        const id = req.user.userId;
 
         let user = await User.findById(id).populate("reposatory");
 
@@ -123,7 +123,7 @@ const getUserProfile = async (req,res)=>{
 
 const deleteUserProfile = async (req,res)=>{
     try{
-        const id = req.params.id;
+        const id = req.user.userId;
 
         const user = await User.findByIdAndDelete(id);
 
@@ -142,7 +142,7 @@ const deleteUserProfile = async (req,res)=>{
 
 const updateUserProfile = async (req,res)=>{
     try{
-        const id = req.params.id;
+        const id = req.user.userId;
         const {email,password} = req.body;
 
         const updateField = {};
@@ -175,7 +175,7 @@ const updateUserProfile = async (req,res)=>{
 
 const updateStarRepo = async (req, res) => {
     const repoId = req.params.id;
-    const { userId } = req.body;
+    const userId = req.user.userId;
 
     try {
         const user = await User.findById(userId);

@@ -9,10 +9,19 @@ import MenuIcon from "@mui/icons-material/Menu";
 import AddIcon from "@mui/icons-material/Add";
 import FolderIcon from "@mui/icons-material/Folder";
 import GitHubIcon from "@mui/icons-material/GitHub";
+import { useLocation } from "react-router-dom";
 
 import { Link } from "react-router-dom";
+import { Button } from "@mui/material";
 
 const Navbar = () => {
+    const location = useLocation();
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+
+        window.location.href = "/login";
+    };
     return (
         <AppBar
             position="static"
@@ -32,6 +41,7 @@ const Navbar = () => {
 
                 {/* Left side */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+
 
                     {/* Menu */}
                     <Tooltip title="Menu">
@@ -68,6 +78,14 @@ const Navbar = () => {
                         gap: 1,
                     }}
                 >
+
+                    {location.pathname === "/profile"?
+                        <Tooltip title="logout">
+                            <Button sx={{color:"white"}} onClick={handleLogout}>
+                                Logout
+                            </Button>
+                        </Tooltip>:null
+                    }
 
                     {/* All repositories */}
                     <Tooltip title="All Repositories">

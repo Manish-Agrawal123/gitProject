@@ -1,132 +1,149 @@
 import React, { useEffect, useState } from "react";
 import "./Login.css";
-import {Link} from "react-router-dom";
-import axios from "axios";
+
+import { Link } from "react-router-dom";
+
+import api from "../../axios.js";
 
 import logo from "../../assets/github.svg";
 
 import { useAuth } from "../../AuthContext";
 
 const Login = () => {
+    const { setUser } = useAuth();
 
-    const {User,setUser}  = useAuth();
-
-    useEffect(()=>{
-        localStorage.removeItem("token");
-        localStorage.removeItem("userId");
-        setUser(null);
-    },[]);
-
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
-  const [loading,setLoading] = useState(false);
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
     });
-  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try{
-      setLoading(true);
-      const res = await axios.post("http://localhost:3000/login",{
-        email:formData.email,
-        password:formData.password,
-      })
-      localStorage.setItem("token",res.data.token);
-      localStorage.setItem("userId",res.data.userId);
-      setUser(res.data.userId);
-      setLoading(false);
-      window.location.href = "/";
-    }catch(err){
-      console.error(err);
-      alert("Login failed");
-      setLoading(false);
-    }
-  };
+    const [loading, setLoading] = useState(false);
 
-  return (
-    <div className="login-page">
-      <div className="login-wrapper">
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value,
+        });
+    };
 
-        {/* Logo + Heading */}
-        <div className="brand">
-          <img
-            src={logo}
-            className="github-logo"
-            alt="GitHub"
-          />
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-          <h1>Sign in to your account</h1>
-        </div>
+        try {
+            setLoading(true);
 
-        {/* Login Card */}
-        <div className="login-card">
-          <form onSubmit={handleSubmit}>
+            const response = await api.post(
+                "/login",
+                {
+                    email: formData.email,
+                    password: formData.password,
+                }
+            );
 
-            {/* Email */}
-            <div className="form-group">
-              <label htmlFor="email">
-                Email address
-              </label>
+            localStorage.setItem(
+                "token",
+                response.data.token
+            );
 
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="you@example.com"
-                required
-              />
+            localStorage.setItem(
+                "userId",
+                response.data.userId
+            );
+
+            setUser(response.data.userId);
+
+            window.location.href = "/";
+        } catch (error) {
+            console.error(
+                "Login error:",
+                error
+            );
+
+            alert(
+                error.response?.data?.message ||
+                "Login failed"
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="login-page">
+            <div className="login-wrapper">
+
+                <div className="brand">
+                    <img
+                        src={logo}
+                        className="github-logo"
+                        alt="GitHub"
+                    />
+
+                    <h1>
+                        Sign in to your account
+                    </h1>
+                </div>
+
+                <div className="login-card">
+                    <form onSubmit={handleSubmit}>
+
+                        <div className="form-group">
+                            <label htmlFor="email">
+                                Email address
+                            </label>
+
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                placeholder="you@example.com"
+                                required
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <div className="password-label">
+                                <label htmlFor="password">
+                                    Password
+                                </label>
+                            </div>
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                placeholder="Enter your password"
+                                required
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="login-btn"
+                            disabled={loading}
+                        >
+                            {loading
+                                ? "Signing in..."
+                                : "Sign in"}
+                        </button>
+
+                    </form>
+                </div>
+
+                <div className="signup-box">
+                    Don't have an account?{" "}
+                    <Link to="/signup">
+                        Create an account
+                    </Link>
+                </div>
+
             </div>
-
-            {/* Password */}
-            <div className="form-group">
-              <div className="password-label">
-                <label htmlFor="password">
-                  Password
-                </label>
-              </div>
-
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-
-            {/* Button */}
-            <button
-              type="submit"
-              className="login-btn"
-              disabled = {loading}
-            >
-              Sign in
-            </button>
-
-          </form>
         </div>
-
-        {/* Signup */}
-        <div className="signup-box">
-          Don't have an account?{" "}
-          <Link to = "/signup">Create an account</Link>
-        </div>
-
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Login;

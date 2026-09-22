@@ -2,15 +2,29 @@ import {
     Box,
     Typography,
     IconButton,
+    Tooltip,
 } from "@mui/material";
 
-import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import InsertDriveFileOutlinedIcon
+    from "@mui/icons-material/InsertDriveFileOutlined";
 
-const FileHeader = ({ file }) => {
+import ContentCopyIcon
+    from "@mui/icons-material/ContentCopy";
 
+const FileHeader = ({
+    file,
+}) => {
     const handleCopy = async () => {
-        await navigator.clipboard.writeText(file.content);
+        try {
+            await navigator.clipboard.writeText(
+                file.content
+            );
+        } catch (error) {
+            console.error(
+                "Unable to copy file content:",
+                error
+            );
+        }
     };
 
     return (
@@ -30,21 +44,21 @@ const FileHeader = ({ file }) => {
                     sm: 1.5,
                 },
 
-                borderBottom: "1px solid #30363d",
+                borderBottom:
+                    "1px solid #30363d",
 
                 minWidth: 0,
             }}
         >
-
             <Box
                 sx={{
                     display: "flex",
                     alignItems: "center",
                     gap: 1,
+
                     minWidth: 0,
                 }}
             >
-
                 <InsertDriveFileOutlinedIcon
                     sx={{
                         fontSize: {
@@ -79,30 +93,43 @@ const FileHeader = ({ file }) => {
                     {file.fileName}
                 </Typography>
 
+                {file.encoding === "base64" && (
+                    <Typography
+                        sx={{
+                            color: "#8b949e",
+                            fontSize: "11px",
+                            flexShrink: 0,
+                        }}
+                    >
+                        binary
+                    </Typography>
+                )}
             </Box>
 
-
-            <IconButton
-                onClick={handleCopy}
-                sx={{
-                    color: "#c9d1d9",
-                    flexShrink: 0,
-
-                    "&:hover": {
-                        backgroundColor: "#30363d",
-                    },
-                }}
-            >
-                <ContentCopyIcon
+            <Tooltip title="Copy content">
+                <IconButton
+                    onClick={handleCopy}
                     sx={{
-                        fontSize: {
-                            xs: 18,
-                            sm: 20,
+                        color: "#c9d1d9",
+
+                        flexShrink: 0,
+
+                        "&:hover": {
+                            backgroundColor:
+                                "#30363d",
                         },
                     }}
-                />
-            </IconButton>
-
+                >
+                    <ContentCopyIcon
+                        sx={{
+                            fontSize: {
+                                xs: 18,
+                                sm: 20,
+                            },
+                        }}
+                    />
+                </IconButton>
+            </Tooltip>
         </Box>
     );
 };

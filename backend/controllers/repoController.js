@@ -6,8 +6,8 @@ const path = require("path");
 const { s3, S3_BUCKET } = require("../config/aws-cnfig");
 
 const createReposatory = async (req, res) => {
-    const { id } = req.params;
-    const { name, description, content, visibility } = req.body;
+    const id = req.user.userId;
+    const { name, description, visibility } = req.body;
     try {
         if (!name) {
             return res.status(400).json({
@@ -23,7 +23,6 @@ const createReposatory = async (req, res) => {
             name,
             owner: id,
             description,
-            content,
             visibility,
         });
         const result = await newReposatory.save();
@@ -44,7 +43,6 @@ const createReposatory = async (req, res) => {
 
         res.status(201).json({
             message: "new reposatory created",
-            userId: result._id,
         });
 
     } catch (err) {
@@ -111,7 +109,7 @@ const fetchRepoByName = async (req,res)=>{
 }
 
 const fetchRepoCurrUser = async (req,res)=>{
-    const userId = req.params.id;
+    const userId = req.user.userId;
     try{
         const result = await Reposatory.find({owner:userId});
 
@@ -134,7 +132,6 @@ const updateReposatory = async (req,res)=>{
         const {description,content} = req.body;
         const result = await Reposatory.findByIdAndUpdate(id,{
             description,
-            content,
         },{ new: true }
         )
 
@@ -196,15 +193,30 @@ const deleteReposatory = async (req,res)=>{
     }
 }
 
-const repoFiles = async (req,res) =>{
+const repoFiles = async (req, res) => {
     const repoId = req.params.id;
-    try{
 
-        const fetchrepo = await Reposatory.findById(repoId);
-        if(!fetchrepo){
-            res.status(400).json("Reposatory not found");
-            return;
+    try {
+        const userId = req.user.userId;
+
+        const fetchrepo = await Reposatory.findById(repoId).populate("owner");
+
+        if (!fetchrepo) {
+            return res.status(400).json("Reposatory not found");
         }
+
+        if (!fetchrepo.currCommitId) {
+            return res.status(200).json([]);
+        }
+
+        if (!fetchrepo.visibility) {
+            if (userId.toString() !== fetchrepo.owner._id.toString()) {
+                return res.status(403).json({
+                    message: "This repository is private"
+                });
+            }
+        }
+
         const params = {
             Bucket: S3_BUCKET,
             Prefix: `${repoId}/commits/${fetchrepo.currCommitId}/`,
@@ -212,13 +224,15 @@ const repoFiles = async (req,res) =>{
 
         const data = await s3.listObjectsV2(params).promise();
 
-        const objects = data.Contents;
+        const objects = data.Contents || [];
 
         const repo = [];
 
-        for(let object of objects){
+        for (let object of objects) {
 
             const key = object.Key;
+
+            if (path.basename(key) === "commit.json") continue;
 
             const params = {
                 Bucket: S3_BUCKET,
@@ -228,17 +242,30 @@ const repoFiles = async (req,res) =>{
             const fileCont = await s3.getObject(params).promise();
 
             repo.push({
-                fileName:path.basename(key),
-                key:key,
-                content:fileCont.Body.toString()
-            });   
-            
+                fileName: path.basename(key),
+                key: key,
+                encoding: fileCont.Body.includes(0) ? "base64" : "utf8",
+                content: fileCont.Body.toString(
+                    fileCont.Body.includes(0) ? "base64" : "utf8"
+                )
+            });
         }
-        res.json(repo);
-    }catch(err){
-        console.error("problem in s3 bucket");
+
+        return res.json(repo);
+
+    } catch (err) {
+    console.error("Error fetching files:", err);
+
+    if (err.response?.status === 403) {
+        setError("This repository is private.");
+    } else {
+        setError(
+            err.response?.data?.message ||
+            "Unable to fetch repository files."
+        );
     }
 }
+};
 
 module.exports = {
     createReposatory,

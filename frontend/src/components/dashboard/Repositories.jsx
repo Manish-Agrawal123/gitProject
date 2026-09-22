@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../axios.js";
+
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Navbar from "./Navbar";
 
+import Navbar from "./Navbar";
+import Footer from "./Footer.jsx";
 import SuggestedRepoCard from "./SuggestedRepoCard";
 
 const Repositories = () => {
@@ -16,15 +18,13 @@ const Repositories = () => {
     useEffect(() => {
         const fetchRepositories = async () => {
             try {
-                const response = await axios.get(
-                    "http://localhost:3000/repo/all"
-                );
+                const response = await api.get("/repo/all");
 
                 setRepositories(response.data);
-            } catch (err) {
+            } catch (error) {
                 console.error(
                     "Error in fetching repositories:",
-                    err
+                    error
                 );
             }
         };
@@ -32,106 +32,97 @@ const Repositories = () => {
         fetchRepositories();
     }, []);
 
-    // Fetch repositories starred by current user
+    // Fetch user's starred repositories
     useEffect(() => {
         const fetchStarredRepos = async () => {
             try {
-                const response = await axios.get(
-                    `http://localhost:3000/userProfile/${userId}`
-                );
+                const response = await api.get("/userProfile");
 
                 setStarredRepos(response.data.starRepo || []);
-            } catch (err) {
+            } catch (error) {
                 console.error(
                     "Error in fetching starred repositories:",
-                    err
+                    error
                 );
             }
         };
 
-        if (userId) {
-            fetchStarredRepos();
-        }
+        fetchStarredRepos();
     }, [userId]);
 
     // Star / Unstar repository
     const handleStar = async (repoId) => {
         try {
-            const response = await axios.patch(
-                `http://localhost:3000/star/${repoId}`,
-                {
-                    userId,
-                }
+            const wasStarred = starredRepos.some(
+                (id) => id.toString() === repoId.toString()
             );
 
-            // Backend returns updated user's starRepo
+            const response = await api.patch(`/star/${repoId}`);
+
             setStarredRepos(response.data.starRepo || []);
 
-            // Update star count immediately
-            setRepositories((prevRepos) =>
-                prevRepos.map((repo) => {
+            // Update star count locally
+            setRepositories((previousRepositories) =>
+                previousRepositories.map((repo) => {
                     if (repo._id !== repoId) {
                         return repo;
                     }
 
-                    const isCurrentlyStarred =
-                        starredRepos.some(
-                            (id) => id.toString() === repoId.toString()
-                        );
-
                     return {
                         ...repo,
-                        stars: isCurrentlyStarred
+                        stars: wasStarred
                             ? Math.max((repo.stars || 0) - 1, 0)
                             : (repo.stars || 0) + 1,
                     };
                 })
             );
-        } catch (err) {
+        } catch (error) {
             console.error(
                 "Error updating star:",
-                err
+                error
             );
         }
     };
 
     return (
         <>
-        <Navbar/>
-        <Box
-            sx={{
-                minHeight: "100vh",
-                backgroundColor: "#0d1117",
-                color: "#f0f6fc",
-                p: 3,
-            }}
-        >
+            <Navbar />
+
             <Box
                 sx={{
-                    maxWidth: "900px",
-                    mx: "auto",
+                    minHeight: "100vh",
+                    backgroundColor: "#0d1117",
+                    color: "#f0f6fc",
+                    p: 3,
                 }}
             >
-                <Typography
+                <Box
                     sx={{
-                        fontSize: "26px",
-                        fontWeight: 600,
-                        mb: 3,
+                        maxWidth: "900px",
+                        mx: "auto",
                     }}
                 >
-                    All Repositories
-                </Typography>
+                    <Typography
+                        sx={{
+                            fontSize: "26px",
+                            fontWeight: 600,
+                            mb: 3,
+                        }}
+                    >
+                        All Repositories
+                    </Typography>
 
-                {repositories.map((repo) => (
-                    <SuggestedRepoCard
-                        key={repo._id}
-                        repo={repo}
-                        handleStar={handleStar}
-                        starredRepos={starredRepos}
-                    />
-                ))}
+                    {repositories.map((repo) => (
+                        <SuggestedRepoCard
+                            key={repo._id}
+                            repo={repo}
+                            handleStar={handleStar}
+                            starredRepos={starredRepos}
+                        />
+                    ))}
+                </Box>
             </Box>
-        </Box>
+            <Footer/>
         </>
     );
 };

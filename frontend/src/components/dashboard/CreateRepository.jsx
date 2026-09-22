@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../../axios.js";
+
+import Navbar from "./Navbar";
+import Footer from "./Footer.jsx";
 
 import {
     Box,
@@ -47,8 +50,8 @@ const CreateRepository = () => {
             setLoading(true);
             setError("");
 
-            const response = await axios.post(
-                `http://localhost:3000/repo/create/${userId}`,
+            const response = await api.post(
+                `/repo/create`,
                 {
                     name: name.trim(),
                     description: description.trim(),
@@ -73,7 +76,9 @@ const CreateRepository = () => {
     };
 
     return (
-        <Box
+        <>
+            <Navbar/>
+            <Box
             sx={{
                 minHeight: "100vh",
                 backgroundColor: "#0d1117",
@@ -436,6 +441,8 @@ const CreateRepository = () => {
                 </Box>
             </Box>
         </Box>
+        <Footer/>
+        </>
     );
 };
 

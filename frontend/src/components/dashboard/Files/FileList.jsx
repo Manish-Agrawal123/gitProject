@@ -2,8 +2,10 @@ import { Paper } from "@mui/material";
 
 import FileItem from "./FileItem";
 
-const FileList = ({ files, onFileClick }) => {
-
+const FileList = ({
+    files,
+    onFileClick,
+}) => {
     return (
         <Paper
             elevation={0}
@@ -15,7 +17,6 @@ const FileList = ({ files, onFileClick }) => {
                 overflow: "hidden",
             }}
         >
-
             {files.map((file) => (
                 <FileItem
                     key={file.key}
@@ -23,7 +24,6 @@ const FileList = ({ files, onFileClick }) => {
                     onClick={onFileClick}
                 />
             ))}
-
         </Paper>
     );
 };

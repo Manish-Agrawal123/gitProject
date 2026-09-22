@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+
+import api from "../../axios.js";
+
 import Navbar from "../dashboard/Navbar";
-import CalendarHeatmap from 'react-calendar-heatmap';
-import 'react-calendar-heatmap/dist/styles.css';
+import Footer from "../dashboard/Footer.jsx";
+
+import CalendarHeatmap from "react-calendar-heatmap";
+import "react-calendar-heatmap/dist/styles.css";
+
 import useMediaQuery from "@mui/material/useMediaQuery";
 
 import {
@@ -17,175 +22,244 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 
 import ProfileRepoCard from "./ProfileRepoCard";
+
 import "./Profile.css";
 
 const Profile = () => {
     const [profile, setProfile] = useState(null);
-
     const [heatMap, setHeatMap] = useState([]);
 
     const userId = localStorage.getItem("userId");
-    const isMobile = useMediaQuery("(max-width:899px)");
 
-    useEffect(()=>{
-        const fetchValues = async () =>{
-            try{
-                const value = await axios.get(`http://localhost:3000/heatMap/${userId}`);
-                setHeatMap(value.data);
-            }catch (err) {
-                console.error("Error in fetching heatMap", err);
-            }
+    const isMobile = useMediaQuery(
+        "(max-width:899px)"
+    );
+
+    // Fetch heatmap
+    useEffect(() => {
+        if (!userId) {
+            return;
         }
-        fetchValues();
-    },[userId]);
 
+        const fetchHeatMap = async () => {
+            try {
+                const response = await api.get(
+                    `/heatMap/${userId}`
+                );
+
+                setHeatMap(response.data);
+            } catch (error) {
+                console.error(
+                    "Error in fetching heatmap:",
+                    error
+                );
+            }
+        };
+
+        fetchHeatMap();
+    }, [userId]);
+
+    // Fetch profile
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await axios.get(
-                    `http://localhost:3000/userProfile/${userId}`
+                const response = await api.get(
+                    "/userProfile"
                 );
 
                 setProfile(response.data);
-            } catch (err) {
-                console.error("Error in fetching profile", err);
+            } catch (error) {
+                console.error(
+                    "Error in fetching profile:",
+                    error
+                );
             }
         };
 
         fetchProfile();
     }, [userId]);
 
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+
+        navigate("/login");
+    };
+
     if (!profile) {
         return (
             <Box className="profile-page">
-                <Typography>Loading...</Typography>
+                <Typography>
+                    Loading...
+                </Typography>
             </Box>
         );
     }
 
-    const endDate = new Date().toISOString().split("T")[0];
+    const endDate =
+        new Date()
+            .toISOString()
+            .split("T")[0];
 
     const startDate1 = new Date();
     const startDate2 = new Date();
 
-    startDate1.setMonth(startDate1.getMonth() - 6);
-    startDate2.setMonth(startDate2.getMonth() - 12);
+    startDate1.setMonth(
+        startDate1.getMonth() - 6
+    );
 
-    const startDate1String = startDate1.toISOString().split("T")[0];
-    const startDate2String = startDate2.toISOString().split("T")[0];
+    startDate2.setMonth(
+        startDate2.getMonth() - 12
+    );
+
+    const startDate1String =
+        startDate1
+            .toISOString()
+            .split("T")[0];
+
+    const startDate2String =
+        startDate2
+            .toISOString()
+            .split("T")[0];
 
     return (
         <>
-        <Navbar/>
-        <Box className="profile-page">
-            <Grid container spacing={4}>
+            <Navbar />
 
-                {/* LEFT SIDE */}
-                <Grid 
-                
-                size={{ xs: 12, sm: 4, md:3}}
-                sx={{
-                    display: "flex",
-                    justifyContent: {
-                    xs: "center",
-                    md: "flex-start",
-                    },
-                }}
+            <Box className="profile-page">
+                <Grid
+                    container
+                    spacing={4}
                 >
-                    <Stack spacing={2}>
+                    {/* LEFT SIDE */}
 
-                        <Avatar
-                            sx={{
-                                width: 170,
-                                height: 170,
-                                fontSize: 90,
-                            }}
-                        >
-                            {profile.username?.[0]?.toUpperCase()}
-                        </Avatar>
-
-                        <Box>
-                            <Typography variant="h4">
-                                {profile.username}
-                            </Typography>
-
-                            <Button
-                                variant="outlined"
-                                startIcon={<EditIcon />}
-                                sx = {{
-                                    mt:1.2,
+                    <Grid
+                        size={{
+                            xs: 12,
+                            sm: 4,
+                            md: 3,
+                        }}
+                        sx={{
+                            display: "flex",
+                            justifyContent: {
+                                xs: "center",
+                                md: "flex-start",
+                            },
+                        }}
+                    >
+                        <Stack spacing={2}>
+                            <Avatar
+                                sx={{
+                                    width: 170,
+                                    height: 170,
+                                    fontSize: 90,
                                 }}
                             >
-                                Edit profile
-                            </Button>
+                                {profile.username
+                                    ?.charAt(0)
+                                    ?.toUpperCase()}
+                            </Avatar>
 
-                        </Box>
+                            <Box>
+                                <Typography variant="h4">
+                                    {profile.username}
+                                </Typography>
 
-                        
-
-                        <Stack
-                            direction="row"
-                            spacing={1}
-                            alignItems="center"
-                        >
-                            <Typography>
-                                {profile.followers?.length || 0}
-                            </Typography>
-
-                            <Typography>
-                                followers
-                            </Typography>
-
-                            <Typography>
-                                ·
-                            </Typography>
-
-                            <Typography>
-                                {profile.followedUser?.length || 0}
-                            </Typography>
-
-                            <Typography>
-                                following
-                            </Typography>
-                        </Stack>
-
-                    </Stack>
-                </Grid>
-
-
-                {/* RIGHT SIDE */}
-                <Grid size={{ xs: 12, sm: 8,md:9 }}>
-                    <Stack spacing={3}>
-
-                        <Typography variant="h5">
-                            Your repositories
-                        </Typography>
-
-                        <Grid container spacing={2}>
-                            {profile.reposatory?.map((repo) => (
-                                <Grid
-                                    key={repo._id}
-                                    size={{ xs: 12, md: 6 }}
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<EditIcon />}
+                                    sx={{
+                                        mt: 1.2,
+                                    }}
                                 >
-                                    <ProfileRepoCard repo={repo} />
-                                </Grid>
-                            ))}
-                        </Grid>
-                        
-                        <Grid container>
-                            <CalendarHeatmap
-                                startDate={isMobile ? startDate1String : startDate2String}
-                                endDate={endDate}
-                                values={heatMap}
-                            />
+                                    Edit profile
+                                </Button>
+                            </Box>
 
-                        </Grid>
+                            <Stack
+                                direction="row"
+                                spacing={1}
+                                sx={{
+                                    alignItems: "center",
+                                }}
+                            >
+                                <Typography>
+                                    {profile.followers?.length || 0}
+                                </Typography>
 
-                    </Stack>
+                                <Typography>
+                                    followers
+                                </Typography>
+
+                                <Typography>
+                                    ·
+                                </Typography>
+
+                                <Typography>
+                                    {profile.followedUser?.length || 0}
+                                </Typography>
+
+                                <Typography>
+                                    following
+                                </Typography>
+                            </Stack>
+                        </Stack>
+                    </Grid>
+
+                    {/* RIGHT SIDE */}
+
+                    <Grid
+                        size={{
+                            xs: 12,
+                            sm: 8,
+                            md: 9,
+                        }}
+                    >
+                        <Stack
+                            spacing={3}
+                            sx={{
+                                width: "100%",
+                            }}
+                        >
+                            <Typography variant="h5">
+                                Your repositories
+                            </Typography>
+
+                            <Grid
+                                container
+                                spacing={2}
+                            >
+                                {profile.reposatory?.map((repo) => (
+                                    <Grid
+                                        key={repo._id}
+                                        size={{
+                                            xs: 12,
+                                            md: 6,
+                                        }}
+                                    >
+                                        <ProfileRepoCard
+                                            repo={repo}
+                                        />
+                                    </Grid>
+                                ))}
+                            </Grid>
+
+                            <Grid container>
+                                <CalendarHeatmap
+                                    startDate={
+                                        isMobile
+                                            ? startDate1String
+                                            : startDate2String
+                                    }
+                                    endDate={endDate}
+                                    values={heatMap}
+                                />
+                            </Grid>
+                        </Stack>
+                    </Grid>
                 </Grid>
-
-            </Grid>
-        </Box>
+            </Box>
+            <Footer/>
         </>
     );
 };

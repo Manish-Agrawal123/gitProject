@@ -1,23 +1,29 @@
 const Cotr = require("../models/contributionModel.js");
 
-const getValues = async (req,res) =>{
-    const userId = req.params.id;
-    try{
-        const values = await Cotr.findOne({user:userId});
-        if(!values){
-            res.status(404).json("error in heatmap");
-            return;
+const getValues = async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        const values = await Cotr.findOne({
+            user: userId,
+        });
+
+        // New user / no contributions yet
+        if (!values) {
+            return res.status(200).json([]);
         }
-        res.json(values.contribution);
-    }catch (err) {
 
-        console.error("error in heatmap", err);
+        return res.status(200).json(
+            values.contribution || []
+        );
+    } catch (error) {
+        console.error("Heatmap error:", error);
 
-        res.status(500).json({
-            message: "error in heatmap"
+        return res.status(500).json({
+            message: "Error fetching heatmap",
         });
     }
-}
+};
 
 
 module.exports = getValues;

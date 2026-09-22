@@ -3,10 +3,13 @@ import {
     Typography,
 } from "@mui/material";
 
-import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
+import InsertDriveFileOutlinedIcon
+    from "@mui/icons-material/InsertDriveFileOutlined";
 
-const FileItem = ({ file, onClick }) => {
-
+const FileItem = ({
+    file,
+    onClick,
+}) => {
     return (
         <Box
             onClick={() => onClick(file)}
@@ -27,7 +30,8 @@ const FileItem = ({ file, onClick }) => {
 
                 cursor: "pointer",
 
-                borderBottom: "1px solid #30363d",
+                borderBottom:
+                    "1px solid #30363d",
 
                 "&:last-child": {
                     borderBottom: "none",
@@ -38,14 +42,15 @@ const FileItem = ({ file, onClick }) => {
                 },
             }}
         >
-
             <InsertDriveFileOutlinedIcon
                 sx={{
                     fontSize: {
                         xs: 18,
                         sm: 20,
                     },
+
                     color: "#8b949e",
+
                     flexShrink: 0,
                 }}
             />
@@ -70,7 +75,6 @@ const FileItem = ({ file, onClick }) => {
             >
                 {file.fileName}
             </Typography>
-
         </Box>
     );
 };

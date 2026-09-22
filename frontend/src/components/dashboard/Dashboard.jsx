@@ -1,19 +1,22 @@
 import "./Dashboard.css";
-import { useState,useEffect } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react";
+import api from "../../axios.js";
+
 import SuggestedRepoCard from "./SuggestedRepoCard";
 import RepoSidebar from "./RepoSidebar";
 import Changelog from "./Changelog";
+
 import Grid from "@mui/material/Grid";
 import useMediaQuery from "@mui/material/useMediaQuery";
+
 import Navbar from "./Navbar";
+import Footer from "./Footer.jsx";
 
-const Dashboard = () =>{
-
-    let [userRepos,setUserRepos] = useState([]);
-    let [suggRepos,setSuggRepo] = useState([]);
-    let [search,setSearch] = useState("");
-    let [starredRepos,setStarredRepos] = useState([]);
+const Dashboard = () => {
+    const [userRepos, setUserRepos] = useState([]);
+    const [suggRepos, setSuggRepo] = useState([]);
+    const [search, setSearch] = useState("");
+    const [starredRepos, setStarredRepos] = useState([]);
 
     const isMobile = useMediaQuery("(max-width:599px)");
 
@@ -23,132 +26,156 @@ const Dashboard = () =>{
         repo.name?.toLowerCase().includes(search.toLowerCase())
     );
 
-
+    // Star / Unstar repository
     const handleStar = async (repoId) => {
         try {
+            const response = await api.patch(`/star/${repoId}`);
 
-            const res = await axios.patch(`http://localhost:3000/star/${repoId}`, {
-                userId
-            });
-
-            setStarredRepos(res.data.starRepo || []);
-        } catch (err) {
-            console.error("Error updating star:", err);
+            setStarredRepos(response.data.starRepo || []);
+        } catch (error) {
+            console.error("Error updating star:", error);
         }
     };
 
-    useEffect(()=>{
-        const fetchRepos = async () =>{
-            try{
-                const response = await axios.get(`http://localhost:3000/repo/user/${userId}`);
+    // Fetch user's repositories
+    useEffect(() => {
+        const fetchRepos = async () => {
+            try {
+                const response = await api.get("/repo/user");
+
                 setUserRepos(response.data);
+            } catch (error) {
+                console.error(
+                    "Error in fetching repositories:",
+                    error
+                );
             }
-            catch(err){
-                console.error("Error in fetching reposatories",err);
-            }
-        }
+        };
+
         fetchRepos();
-    },[userId]);
+    }, [userId]);
 
-    useEffect(()=>{
-        const fetchStarRepos = async () =>{
-            try{
-                const response = await axios.get(`http://localhost:3000/userProfile/${userId}`);
+    // Fetch repositories starred by current user
+    useEffect(() => {
+        const fetchStarRepos = async () => {
+            try {
+                const response = await api.get("/userProfile");
+
                 setStarredRepos(response.data.starRepo || []);
+            } catch (error) {
+                console.error(
+                    "Error in fetching starred repositories:",
+                    error
+                );
             }
-            catch(err){
-                console.error("Error in fetching star reposatories",err);
-            }
-        }
+        };
+
         fetchStarRepos();
-    },[userId]);
+    }, [userId]);
 
-    useEffect(()=>{
-        const fetchSuggRepos = async () =>{
-            try{
-                const response = await axios.get(`http://localhost:3000/repo/all`);
+    // Fetch all repositories
+    useEffect(() => {
+        const fetchSuggRepos = async () => {
+            try {
+                const response = await api.get("/repo/all");
+
                 setSuggRepo(response.data);
+            } catch (error) {
+                console.error(
+                    "Error in fetching repositories:",
+                    error
+                );
             }
-            catch(err){
-                console.error("Error in fetching reposatories",err);
-            }
-        }
+        };
+
         fetchSuggRepos();
-    },[starredRepos])
+    }, [starredRepos]);
 
-    return(<>
-        <Navbar/>
-        <Grid container spacing={5} sx={{ paddingTop: 3 }}>
+    return (
+        <>
+            <Navbar />
 
-            {/* First Aside - visible from 600px and above */}
-            {!isMobile && (
-                <Grid
-                    size={{ xs: 3, md: 3 }}
-                    sx={{
-                        borderRight: {
-                            xs: "none",
-                            md: "1px solid #30363d",
-                        },
-                        minHeight: "100vh",
-                        pr: 2,
-                        boxSizing: "border-box",
-                    }}
-                >
-                    <RepoSidebar
-                        search={search}
-                        setSearch={setSearch}
-                        searchResult={searchResult}
-                    />
-                </Grid>
-            )}
-
-            {/* Main */}
             <Grid
-                size={{
-                    xs: isMobile ? 12 : 9,
-                    md: 6,
+                container
+                spacing={5}
+                sx={{
+                    paddingTop: 3,
                 }}
             >
-
-                {/* RepoSidebar inside Main on mobile */}
-                {isMobile && (
-                    <RepoSidebar
-                        search={search}
-                        setSearch={setSearch}
-                        searchResult={searchResult}
-                    />
+                {/* LEFT SIDEBAR */}
+                {!isMobile && (
+                    <Grid
+                        size={{
+                            xs: 3,
+                            md: 3,
+                        }}
+                        sx={{
+                            borderRight: {
+                                xs: "none",
+                                md: "1px solid #30363d",
+                            },
+                            minHeight: "100vh",
+                            pr: 2,
+                            boxSizing: "border-box",
+                        }}
+                    >
+                        <RepoSidebar
+                            search={search}
+                            setSearch={setSearch}
+                            searchResult={searchResult}
+                        />
+                    </Grid>
                 )}
 
-                <h2>Suggest Repositories</h2>
-
-                {suggRepos.map((repo) => (
-                    <SuggestedRepoCard
-                        key={repo._id}
-                        repo={repo}
-                        handleStar={handleStar}
-                        starredRepos={starredRepos}
-                    />
-                ))}
-
-            </Grid>
-
-            {/* Second Aside - visible from 600px and above? */}
-            {!isMobile && (
+                {/* MAIN */}
                 <Grid
-                    size={{ xs: 0, md: 3 }}
-                    sx={{
-                        display: {
-                            xs: "none",
-                            md: "block",
-                        },
+                    size={{
+                        xs: isMobile ? 12 : 9,
+                        md: 6,
                     }}
                 >
-                    <Changelog />
-                </Grid>
-            )}
+                    {/* Sidebar on mobile */}
+                    {isMobile && (
+                        <RepoSidebar
+                            search={search}
+                            setSearch={setSearch}
+                            searchResult={searchResult}
+                        />
+                    )}
 
-        </Grid>
-    </>);
-}
+                    <h2>Suggest Repositories</h2>
+
+                    {suggRepos.map((repo) => (
+                        <SuggestedRepoCard
+                            key={repo._id}
+                            repo={repo}
+                            handleStar={handleStar}
+                            starredRepos={starredRepos}
+                        />
+                    ))}
+                </Grid>
+
+                {/* CHANGELOG */}
+                {!isMobile && (
+                    <Grid
+                        size={{
+                            xs: 0,
+                            md: 3,
+                        }}
+                        sx={{
+                            display: {
+                                xs: "none",
+                                md: "block",
+                            },
+                        }}
+                    >
+                        <Changelog />
+                    </Grid>
+                )}
+            </Grid>
+            <Footer/>
+        </>
+    );
+};
 
 export default Dashboard;
